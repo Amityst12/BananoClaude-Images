@@ -1,0 +1,4 @@
+generated-images/
+generated-videos/
+.DS_Store
+node_modules/
