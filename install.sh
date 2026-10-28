@@ -8,7 +8,7 @@ set -euo pipefail
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILLS=(gemini-image)
 TARGETS=("$HOME/.claude/skills" "$HOME/.agents/skills")
-BACKUP="$HOME/.local/share/banonoclaude-images-backups/$(date +%Y%m%d-%H%M%S)"
+BACKUP="$HOME/.local/share/bananoclaude-images-backups/$(date +%Y%m%d-%H%M%S)"
 
 ok()   { printf '  \033[32mok\033[0m   %s\n' "$1"; }
 warn() { printf '  \033[33mwarn\033[0m %s\n' "$1"; }
