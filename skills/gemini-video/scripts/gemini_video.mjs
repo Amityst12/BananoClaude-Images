@@ -42,11 +42,20 @@ function parseArgs(argv) {
 }
 
 function asideBin() {
-  for (const c of [process.env.ASIDE_BIN, path.join(HOME, ".local", "bin", "aside"), "/opt/homebrew/bin/aside", "/usr/local/bin/aside"]) {
+  const win = process.platform === "win32";
+  const local = process.env.LOCALAPPDATA;
+  for (const c of [
+    process.env.ASIDE_BIN,
+    win && local && path.join(local, "Aside", "aside.exe"),
+    win && local && path.join(local, "Programs", "Aside", "aside.exe"),
+    path.join(HOME, ".local", "bin", win ? "aside.exe" : "aside"),
+    "/opt/homebrew/bin/aside",
+    "/usr/local/bin/aside",
+  ]) {
     if (c && existsSync(c)) return c;
   }
-  const w = spawnSync("which", ["aside"], { encoding: "utf8" });
-  if (w.status === 0 && w.stdout.trim()) return w.stdout.trim();
+  const w = spawnSync(win ? "where" : "which", ["aside"], { encoding: "utf8" });
+  if (w.status === 0 && w.stdout.trim()) return w.stdout.trim().split(/\r?\n/)[0];
   die("aside CLI not found. Install Aside and its CLI first.", 3);
 }
 

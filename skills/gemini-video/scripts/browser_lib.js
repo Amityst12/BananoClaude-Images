@@ -220,7 +220,7 @@ async function flowSubmit(o) {
     }
     const [chooser] = await Promise.all([p.waitForEvent('filechooser', { timeout: 15000 }), p.locator(up).click()]);
     await chooser.setFiles(file);
-    const base = file.split('/').pop();
+    const base = file.split(/[\\/]/).pop();
     const opt = await __waitRef(p, new RegExp(`option "${__esc(base)} (?:Image|이미지)" ${REF}`), 90000);
     await p.locator(opt.r).click();
     const t1 = Date.now();

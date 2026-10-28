@@ -2,7 +2,7 @@
 // gemini-image bridge: Claude Code -> official Antigravity CLI (agy) headless -> built-in generate_image.
 // Uses the signed-in Google AI subscription quota. Never reads OAuth files, never uses an API key.
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, statSync, readdirSync, copyFileSync, mkdirSync } from "node:fs";
+import { existsSync, statSync, readdirSync, copyFileSync, mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import os from "node:os";
 
@@ -40,15 +40,18 @@ function parseArgs(argv) {
 }
 
 function findAgy() {
+  const win = process.platform === "win32";
   const candidates = [
     process.env.AGY_BIN,
-    path.join(HOME, ".local", "bin", "agy"),
+    win && process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, "agy", "bin", "agy.exe"),
+    win && process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, "Antigravity", "agy.exe"),
+    path.join(HOME, ".local", "bin", win ? "agy.exe" : "agy"),
     "/opt/homebrew/bin/agy",
     "/usr/local/bin/agy",
   ].filter(Boolean);
   for (const c of candidates) if (existsSync(c)) return c;
-  const w = spawnSync("which", ["agy"], { encoding: "utf8" });
-  if (w.status === 0 && w.stdout.trim()) return w.stdout.trim();
+  const w = spawnSync(win ? "where" : "which", ["agy"], { encoding: "utf8" });
+  if (w.status === 0 && w.stdout.trim()) return w.stdout.trim().split(/\r?\n/)[0];
   die("Antigravity CLI (agy) not found. Install it and sign in once interactively with `agy`.", 3);
 }
 
@@ -89,8 +92,27 @@ function newestImagesSince(dirs, sinceMs) {
   return found.sort((a, b) => b.t - a.t).map((x) => x.p);
 }
 
+// Read pixel size straight from the PNG/JPEG header (no sips needed on Windows/Linux).
+function headerDims(file) {
+  try {
+    const b = readFileSync(file);
+    if (b.length > 24 && b.toString("latin1", 1, 4) === "PNG") return `${b.readUInt32BE(16)}x${b.readUInt32BE(20)}`;
+    if (b[0] === 0xff && b[1] === 0xd8) {
+      let i = 2;
+      while (i + 9 < b.length) {
+        if (b[i] !== 0xff) { i++; continue; }
+        const m = b[i + 1];
+        if (m >= 0xc0 && m <= 0xcf && m !== 0xc4 && m !== 0xc8 && m !== 0xcc) return `${b.readUInt16BE(i + 7)}x${b.readUInt16BE(i + 5)}`;
+        i += 2 + b.readUInt16BE(i + 2);
+      }
+    }
+  } catch {}
+  return "unknown";
+}
+
 function dims(file) {
-  const r = spawnSync("sips", ["-g", "pixelWidth", "-g", "pixelHeight", file], { encoding: "utf8" });
+  if (process.platform !== "darwin") return headerDims(file);
+  const r = spawnSync("sips",["-g", "pixelWidth", "-g", "pixelHeight", file], { encoding: "utf8" });
   const w = r.stdout?.match(/pixelWidth:\s*(\d+)/)?.[1];
   const h = r.stdout?.match(/pixelHeight:\s*(\d+)/)?.[1];
   return w && h ? `${w}x${h}` : "unknown";
@@ -130,7 +152,7 @@ async function generate(o) {
   }
 
   const ts = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14);
-  const out = path.resolve(cwd, o.out || path.join("generated-images", `${slug(o.prompt)}-${ts}.png`));
+  let out = path.resolve(cwd, o.out || path.join("generated-images", `${slug(o.prompt)}-${ts}.png`));
   if (existsSync(out) && !o.overwrite) die(`output exists (use --overwrite): ${out}`);
 
   const args = [
@@ -191,7 +213,7 @@ async function generate(o) {
 
   // 1) path reported by the agent, 2) newest image in this run's brain dirs.
   let src = null;
-  const m = (result.response || "").match(/\/[^\s'"`]+\.(?:png|jpe?g|webp)/gi);
+  const m = (result.response || "").match(/(?:[A-Za-z]:[\\/]|\/)[^\s'"`]+\.(?:png|jpe?g|webp)/gi);
   if (m) src = m.reverse().find((p) => existsSync(p) && statSync(p).mtimeMs >= started) || null;
   if (!src) {
     const dirs = [...convIds].map((id) => path.join(BRAIN, id));
@@ -207,10 +229,13 @@ async function generate(o) {
   } else {
     const fmt = { ".png": "png", ".jpg": "jpeg", ".webp": "webp" }[outExt];
     if (!fmt) die(`unsupported output extension: ${outExt}`);
-    const r = spawnSync("sips", ["-s", "format", fmt, src, "--out", out], { encoding: "utf8" });
+    const r = process.platform === "darwin"
+      ? spawnSync("sips", ["-s", "format", fmt, src, "--out", out], { encoding: "utf8" })
+      : { status: 1 }; // no converter outside macOS: fall back to the original format below
     if (r.status !== 0) {
       const fallback = out.replace(/\.[^.]+$/, srcExt);
       copyFileSync(src, fallback);
+      out = fallback;
       warnings.push(`format conversion failed; saved original format to ${fallback}`);
     }
   }
