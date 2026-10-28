@@ -1,4 +1,4 @@
-# BanonoClaude Images 🍌
+# BananoClaude Images 🍌
 
 [English](README.md)
 
@@ -43,16 +43,16 @@ mkdir $HOME\agy-home; cd $HOME\agy-home
 agy            # מתחברים עם Google, בוחרים "Yes, I trust this folder", ויוצאים
 
 # 3. התקנת הסקיל
-git clone https://github.com/Amityst12/BanonoClaude-Images.git $HOME\BanonoClaude-Images
-powershell -ExecutionPolicy Bypass -File $HOME\BanonoClaude-Images\install.ps1
+git clone https://github.com/Amityst12/BananoClaude-Images.git $HOME\BananoClaude-Images
+powershell -ExecutionPolicy Bypass -File $HOME\BananoClaude-Images\install.ps1
 ```
 
 ### macOS / Linux
 
 ```bash
 # מתקינים את agy מ-https://antigravity.google/download, מריצים `agy` פעם אחת בתיקייה ריקה ומתחברים.
-git clone https://github.com/Amityst12/BanonoClaude-Images.git ~/.local/share/BanonoClaude-Images
-~/.local/share/BanonoClaude-Images/install.sh
+git clone https://github.com/Amityst12/BananoClaude-Images.git ~/.local/share/BananoClaude-Images
+~/.local/share/BananoClaude-Images/install.sh
 ```
 
 ההתקנה מחברת את הסקיל ל-`~/.claude/skills` (Claude Code) ול-`~/.agents/skills` (Codex). סקיל קיים באותו שם עובר לגיבוי ולא נמחק. מעדכנים אחר כך עם `git pull`.

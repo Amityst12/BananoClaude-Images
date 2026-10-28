@@ -1,4 +1,4 @@
-# BanonoClaude Images 🍌
+# BananoClaude Images 🍌
 
 [עברית](README.he.md)
 
@@ -43,16 +43,16 @@ mkdir $HOME\agy-home; cd $HOME\agy-home
 agy            # sign in with Google, choose "Yes, I trust this folder", then exit
 
 # 3. Install this skill
-git clone https://github.com/Amityst12/BanonoClaude-Images.git $HOME\BanonoClaude-Images
-powershell -ExecutionPolicy Bypass -File $HOME\BanonoClaude-Images\install.ps1
+git clone https://github.com/Amityst12/BananoClaude-Images.git $HOME\BananoClaude-Images
+powershell -ExecutionPolicy Bypass -File $HOME\BananoClaude-Images\install.ps1
 ```
 
 ### macOS / Linux
 
 ```bash
 # Install agy from https://antigravity.google/download, run `agy` once in an empty folder and sign in.
-git clone https://github.com/Amityst12/BanonoClaude-Images.git ~/.local/share/BanonoClaude-Images
-~/.local/share/BanonoClaude-Images/install.sh
+git clone https://github.com/Amityst12/BananoClaude-Images.git ~/.local/share/BananoClaude-Images
+~/.local/share/BananoClaude-Images/install.sh
 ```
 
 The installer links the skill into `~/.claude/skills` (Claude Code) and `~/.agents/skills` (Codex). An existing skill with the same name is backed up, never deleted. Update later with `git pull`.
