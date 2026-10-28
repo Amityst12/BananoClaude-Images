@@ -85,6 +85,21 @@ node ~/.claude/skills/gemini-image/scripts/gemini_image.mjs usage     # מכסה
 - תמונת reference עם `--ref` (אפשר כמה) שומרת על דמות או סגנון. כדי לערוך את התוצאה האחרונה, משתמשים בה כ-`--ref`.
 - כל תמונה לוקחת כ-40 עד 70 שניות וכ-1% מחלון של 5 שעות.
 
+## שיהיה ש-Claude ישתמש בזה בכל פעם
+
+Claude טוען את הסקיל כשהבקשה שלך מתאימה לתיאור שלו, אבל אפשר להפוך אותו לברירת מחדל לכל בקשת תמונה. מוסיפים את זה ל-`~/.claude/CLAUDE.md` הגלובלי שלך (ב-Windows: `C:\Users\<שם>\.claude\CLAUDE.md`):
+
+```markdown
+# Images
+
+When I ask for an image, picture, illustration, avatar or other generated visual, use the `/gemini-image` skill by default.
+Do not use other image generators unless I ask for them.
+After each image, tell me my remaining quota from the `QUOTA_*` lines.
+Diagrams, charts, SVG and UI mockups are not "images" for this rule.
+```
+
+מפעילים מחדש את Claude Code. בלי הכלל זה עדיין עובד, אבל אם מחוברים כמה כלי תמונות, Claude עלול לבחור בכלי אחר.
+
 ## הערות ל-Windows
 
 המקור נכתב ל-Mac. בפורק הזה נוספו: `install.ps1` (junctions, בלי הרשאות מנהל), איתור `agy.exe` תחת `%LOCALAPPDATA%`, פענוח נתיבי Windows וקריאת גודל תמונה בלי `sips`. בלי `sips` הקובץ נשמר בפורמט ש-`agy` מחזיר (JPEG), גם אם ביקשת `.png`, ותופיע אזהרה.

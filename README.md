@@ -87,6 +87,21 @@ Tips:
 - Pass reference images with `--ref` (repeatable) to keep a character or style. To edit your last result, use it as `--ref`.
 - Each image takes roughly 40-70 seconds and about 1% of a 5-hour window.
 
+## Make Claude use it every time
+
+Claude loads the skill when your request matches its description, but you can make it the default for every image request. Add this to your global `~/.claude/CLAUDE.md` (on Windows: `C:\Users\<you>\.claude\CLAUDE.md`):
+
+```markdown
+# Images
+
+When I ask for an image, picture, illustration, avatar or other generated visual, use the `/gemini-image` skill by default.
+Do not use other image generators unless I ask for them.
+After each image, tell me my remaining quota from the `QUOTA_*` lines.
+Diagrams, charts, SVG and UI mockups are not "images" for this rule.
+```
+
+Restart Claude Code afterwards. Without this rule it still works, but Claude may pick another image tool if you have several connected.
+
 ## Windows notes
 
 Upstream is Mac-first. This fork adds: `install.ps1` (directory junctions, no admin rights), `agy.exe` discovery under `%LOCALAPPDATA%`, Windows path parsing, and image size detection without `sips`. Without `sips`, the file is saved in the format `agy` returns (JPEG). If you ask for `.png`, you still get a `.jpg` and a warning.
