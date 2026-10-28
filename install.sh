@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
-# Install gemini-image and gemini-video as agent skills by symlinking them from this clone.
+# Install gemini-image as an agent skill by symlinking it from this clone (macOS / Linux / Git Bash).
+# On Windows PowerShell use install.ps1 instead.
 # Targets: Claude Code (~/.claude/skills) and Codex (~/.agents/skills).
-# Existing non-symlink skills with the same name are moved to a backup folder, never deleted.
+# An existing non-symlink skill with the same name is moved to a backup folder, never deleted.
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SKILLS=(gemini-image gemini-video)
+SKILLS=(gemini-image)
 TARGETS=("$HOME/.claude/skills" "$HOME/.agents/skills")
-BACKUP="$HOME/.local/share/gemini-media-skill-backups/$(date +%Y%m%d-%H%M%S)"
+BACKUP="$HOME/.local/share/banonoclaude-images-backups/$(date +%Y%m%d-%H%M%S)"
 
 ok()   { printf '  \033[32mok\033[0m   %s\n' "$1"; }
 warn() { printf '  \033[33mwarn\033[0m %s\n' "$1"; }
@@ -42,24 +43,16 @@ fi
 
 AGY="$(command -v agy || true)"; [ -z "$AGY" ] && [ -x "$HOME/.local/bin/agy" ] && AGY="$HOME/.local/bin/agy"
 if [ -n "$AGY" ]; then
-  ok "agy $("$AGY" --version 2>/dev/null | head -1) (gemini-image). Sign in once by running: agy"
+  ok "agy $("$AGY" --version 2>/dev/null | head -1). Sign in once by running: agy"
 else
-  warn "Antigravity CLI (agy) not found. gemini-image needs it: https://antigravity.google/download"
-fi
-
-ASIDE="$(command -v aside || true)"; [ -z "$ASIDE" ] && [ -x "$HOME/.local/bin/aside" ] && ASIDE="$HOME/.local/bin/aside"
-if [ -n "$ASIDE" ]; then
-  ok "aside CLI found (gemini-video). Keep the Aside browser open and signed in to Google."
-else
-  warn "aside CLI not found. gemini-video needs the Aside browser + CLI: https://aside.com"
+  warn "Antigravity CLI (agy) not found. Install it: https://antigravity.google/download"
 fi
 
 case "$(uname -s)" in
-  Darwin) ok "macOS (sips available for image format conversion)";;
-  *) warn "non-macOS: gemini-image saves the original JPEG if sips is unavailable";;
+  Darwin) ok "macOS (sips available for PNG/WebP conversion)";;
+  *) warn "no sips here: images are saved in the format agy returns (JPEG)";;
 esac
 
 echo
 echo "Done. Restart your agent session, then try:"
 echo "  Claude Code: /gemini-image a cozy reading room at sunset, 16:9"
-echo "  Claude Code: /gemini-video a paper boat drifting down a rainy street, 9:16"

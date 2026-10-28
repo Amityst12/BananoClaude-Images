@@ -1,6 +1,6 @@
 ---
 name: gemini-image
-description: Generate or edit images with Google's built-in Antigravity image tool (Nano Banana family) on the user's Google AI subscription, by running the official Antigravity CLI (agy) headlessly. Use when the user asks for a Gemini / Nano Banana image, wants to use leftover Google subscription quota for images, or wants a reference-guided image or edit without an API key. Not for video (see gemini-video).
+description: Generate or edit images with Google's built-in Antigravity image tool (Nano Banana family) on the user's Google AI subscription, by running the official Antigravity CLI (agy) headlessly. Use when the user asks for a Gemini / Nano Banana image, wants to use leftover Google subscription quota for images, or wants a reference-guided image or edit without an API key. Image only (no video).
 ---
 
 # Gemini Image (agy bridge)

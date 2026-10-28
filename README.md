@@ -1,105 +1,105 @@
-# Gemini Media Skill
+# BanonoClaude Images 🍌
 
-[한국어](README.ko.md)
+[עברית](README.he.md)
 
-> **Local Windows fork: image only.** `gemini-video` (which needs the Aside browser) was removed and `install.ps1` replaces `install.sh` on Windows. The video sections below are kept from upstream and do not apply here.
+**Generate Gemini images (Nano Banana) straight from Claude Code, using the Google AI subscription you already pay for.**
 
-Generate **Gemini images (Nano Banana)** and **Veo videos** from Claude Code or Codex using the **Google AI subscription you already pay for**. No Gemini API key, no per-call billing, no exported tokens.
+If you have a Google AI Pro / Ultra plan *and* use Claude, there was no clean way to make Gemini images from inside Claude. The Gemini API needs a separate key and per-image billing. This skill fixes that: Claude asks the official Antigravity CLI (`agy`) to draw the image, and the cost comes out of your subscription quota. No API key, no exported tokens, no extra bill.
 
-| Image (text) | Image (reference) | Video (reference, Gemini web) |
-|---|---|---|
-| <img src="assets/image-text.jpg" width="240"> | <img src="assets/image-reference.jpg" width="135"> | <img src="assets/video-gemini.gif" width="135"> |
+| Text prompt | Another prompt |
+|---|---|
+| <img src="assets/showcase-glass-robot.jpg" width="300"> | <img src="assets/showcase-banana-explainer.jpg" width="420"> |
 
-Inspired by [GENEXIS-AI/gpt-image-skill](https://github.com/GENEXIS-AI/gpt-image-skill), which does the same for ChatGPT images through Codex.
+Both images were made from Claude Code with this skill, on Windows 11.
 
 ## How it works
 
-Google does not offer OAuth for third-party clients, and people who plugged Antigravity OAuth tokens into other tools have had their accounts suspended. This project never touches tokens. It only drives **official Google surfaces** the same way you would:
-
 ```
-gemini-image:  agent -> node script -> official `agy -p` (Antigravity CLI, headless) -> built-in generate_image -> PNG in your project
-gemini-video:  agent -> node script -> `aside repl` -> your logged-in Gemini web / Flow tab -> MP4 in your project
+You -> Claude Code -> /gemini-image -> node script -> official `agy -p` (headless) -> built-in generate_image -> image file in your project
 ```
 
-- **Images** use the Antigravity CLI's built-in `generate_image` tool, billed to your Google AI plan's Antigravity quota. The script strips `GEMINI_API_KEY` / `GOOGLE_API_KEY` so agy can never fall back to paid API-key mode.
-- **Videos** have no official CLI (agy has no video tool), so the skill operates the Gemini web app ("Create video") or Google Flow in your own browser session via [Aside](https://aside.com)'s Playwright-style REPL. Downloads happen inside that session; cookies never leave the browser.
+- Only the official `agy` binary is launched. The script never reads your Google credentials, never touches cookies or OAuth tokens, and never calls Google servers itself.
+- It removes `GEMINI_API_KEY` / `GOOGLE_API_KEY` from the environment so `agy` cannot fall back to paid API-key mode.
+- After every image it prints how much quota you have left (5-hour and weekly), and Claude tells you.
 
 ## Requirements
 
-| | gemini-image | gemini-video |
-|---|---|---|
-| Plan | Google AI Pro / Ultra (Antigravity quota) | Google AI plan with Gemini video / Flow access |
-| Tools | [Antigravity CLI](https://antigravity.google/download) `agy`, signed in once | [Aside](https://aside.com) browser + `aside` CLI, signed in to Google |
-| Runtime | Node.js 18+ | Node.js 18+ |
-
-Tested on macOS with agy 1.3.1 and Aside CLI 1.26 (Oct 2026). `ffmpeg`/`ffprobe` are optional (used to report video size/duration).
+- A Google AI Pro or Ultra plan (this is what pays for the images).
+- [Node.js](https://nodejs.org) 18+.
+- The Antigravity CLI, `agy`, signed in once (steps below).
+- Claude Code (also works with Codex, which reads `~/.agents/skills`).
 
 ## Install
 
-```bash
-git clone https://github.com/inyounglee-datapopcorn/gemini-media-skill.git ~/.local/share/gemini-media-skill
-~/.local/share/gemini-media-skill/install.sh
+### Windows (PowerShell)
+
+```powershell
+# 1. Install the Antigravity CLI (official Google installer), then open a NEW PowerShell window
+irm https://antigravity.google/cli/install.ps1 | iex
+
+# 2. Sign in once. Do it inside a small empty folder, NOT your whole home folder,
+#    because agy asks to trust the folder it starts in.
+mkdir $HOME\agy-home; cd $HOME\agy-home
+agy            # sign in with Google, choose "Yes, I trust this folder", then exit
+
+# 3. Install this skill
+git clone https://github.com/Amityst12/BanonoClaude-Images.git $HOME\BanonoClaude-Images
+powershell -ExecutionPolicy Bypass -File $HOME\BanonoClaude-Images\install.ps1
 ```
 
-`install.sh` symlinks both skills into `~/.claude/skills` (Claude Code) and `~/.agents/skills` (Codex), moves any same-named existing skill to a backup folder, and checks for `node`, `agy`, and `aside`. Update with `git pull`; the symlinks pick it up.
+### macOS / Linux
 
-First-time sign-in for images: run `agy` once in a terminal and sign in with Google. In Antigravity settings, set **AI Credit Overages** to **Never** so going past your baseline quota cannot spend purchased credits.
+```bash
+# Install agy from https://antigravity.google/download, run `agy` once in an empty folder and sign in.
+git clone https://github.com/Amityst12/BanonoClaude-Images.git ~/.local/share/BanonoClaude-Images
+~/.local/share/BanonoClaude-Images/install.sh
+```
+
+The installer links the skill into `~/.claude/skills` (Claude Code) and `~/.agents/skills` (Codex). An existing skill with the same name is backed up, never deleted. Update later with `git pull`.
+
+Then restart Claude Code.
+
+**Recommended:** in Antigravity settings set **AI Credit Overages** to **Never**, so going over your quota can never spend purchased credits.
 
 ## Usage
 
-Just ask your agent:
+Just ask Claude:
 
 ```
 /gemini-image A cobalt-blue glass robot on a warm off-white background, 1:1
-/gemini-image Use @robot.png as the character. Put it on a rainy Seoul street at night, 9:16 poster
-/gemini-video Use generated-images/robot.png as the character. It rides a bicycle through the rain, 16:9
+/gemini-image Same robot, but riding a bicycle in the rain, 9:16 poster
 ```
 
-Or call the scripts directly:
+Or call the script directly:
 
 ```bash
-# Image (text or reference). Output: PATH=, SIZE=, MARKDOWN=
 node ~/.claude/skills/gemini-image/scripts/gemini_image.mjs generate \
   --prompt "A glass robot riding a bicycle on a rainy street, 16:9 landscape" \
   --ref robot.png --out generated-images/robot-bike.png
-node ~/.claude/skills/gemini-image/scripts/gemini_image.mjs usage      # remaining quota
 
-# Video via Gemini web (default). Output: PATH=, SIZE=, DURATION=, AUDIO=
-node ~/.claude/skills/gemini-video/scripts/gemini_video.mjs generate \
-  --prompt "Use this image as the character. The robot waves at the camera in a sunny park." \
-  --ref robot.png --aspect 9:16 --expect-account you@gmail.com --out generated-videos/wave.mp4
-
-# Video via Google Flow (pick a model, up to 3 references, hard cost cap)
-node ~/.claude/skills/gemini-video/scripts/gemini_video.mjs generate --backend flow \
-  --model lite --max-credits 20 --prompt "..." --out generated-videos/clip.mp4
-node ~/.claude/skills/gemini-video/scripts/gemini_video.mjs credits    # Flow + AI credits
+node ~/.claude/skills/gemini-image/scripts/gemini_image.mjs usage     # remaining quota
 ```
 
-## What we measured
+Output lines: `PATH=`, `SIZE=`, `SOURCE=`, `SECONDS=`, `MARKDOWN=`, `QUOTA_5H=`, `QUOTA_WEEK=`. Add `--no-quota` to skip the quota check, `--dry-run` to see the exact `agy` command without generating.
 
-| Path | Result | Time | Cost |
-|---|---|---|---|
-| gemini-image, text | 1024x1024 JPEG/PNG | ~70 s | ~1% of a 5-hour Antigravity window |
-| gemini-image, reference + "16:9" / "9:16" | 1376x768 / 768x1376 | 36-50 s | same |
-| gemini-video, Gemini web | 720p, 10 s, audio | ~1 min | Gemini app video allowance |
-| gemini-video, Flow Veo 3.1 Lite | 720p, 8 s, audio | ~1 min | 10 credits (Fast: 20) |
+Tips:
+- Put the aspect ratio in the prompt in words ("16:9 landscape", "9:16 vertical").
+- Pass reference images with `--ref` (repeatable) to keep a character or style. To edit your last result, use it as `--ref`.
+- Each image takes roughly 40-70 seconds and about 1% of a 5-hour window.
+
+## Windows notes
+
+Upstream is Mac-first. This fork adds: `install.ps1` (directory junctions, no admin rights), `agy.exe` discovery under `%LOCALAPPDATA%`, Windows path parsing, and image size detection without `sips`. Without `sips`, the file is saved in the format `agy` returns (JPEG). If you ask for `.png`, you still get a `.jpg` and a warning.
 
 ## Limits and honest caveats
 
-- **Watermarks.** Gemini web videos carry a small sparkle mark; Flow videos carry a small "Veo" mark (mandatory in some regions). Images and videos also carry invisible SynthID.
-- **Quotas are your plan's.** Nothing here bypasses limits or makes features available on plans that lack them. The Gemini app's daily video allowance is not shown in the UI; the skill reports Gemini's message when you hit it.
-- **gemini-video automates a web UI.** It opens pages with `?hl=en` and matches English and Korean labels, but Google can change the page at any time. When that happens the script fails loudly ("UI element not found") instead of guessing. Automating a consumer web app may conflict with Google's terms; use it for your own account, at your own risk, at human-like volume.
-- **Image text** (signs, labels) can be garbled and real brand names can appear unprompted. Check before commercial use.
-- **Transparent backgrounds** are not supported by the agy image tool.
-- Each video run creates a new Gemini chat or Flow project in your account. Clean them up if you like.
+- Image only. Video (Veo) has no official CLI on a consumer plan, so it is not included.
+- Quotas are your plan's. Nothing here bypasses limits or unlocks features your plan lacks.
+- Text inside images (signs, labels) can be garbled, and real brand names can appear unprompted. Check before commercial use. Images carry invisible SynthID watermarks.
+- Transparent backgrounds are not supported by the `agy` image tool.
+- Tested on Windows 11 with `agy` 1.4.9 and Node 22. The macOS path is upstream's and was not re-tested here.
+- This is an unofficial community project, not affiliated with Google or Anthropic. `agy` may change; if it does, the script fails with a clear error.
 
-## Safety boundaries
+## Credits and license
 
-- Never reads `~/.gemini` credential files, never extracts cookies or OAuth tokens, never calls Google backends directly.
-- Never passes `--dangerously-skip-permissions` to agy; runs it with `--sandbox` and flags any side-effecting tool call.
-- Flow runs read the real credit cost from the page and abort *before* submitting if it exceeds `--max-credits`.
-- `--expect-account` aborts if a different Google account is signed in.
-
-## License
-
-MIT
+Based on [inyounglee-datapopcorn/gemini-media-skill](https://github.com/inyounglee-datapopcorn/gemini-media-skill) (MIT, Inyoung Lee / DataPopcorn), which inspired the `agy` bridge. This fork removes the video part, adds Windows support and quota reporting. MIT, see [LICENSE](LICENSE).
