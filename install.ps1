@@ -1,9 +1,9 @@
-# Windows installer: links gemini-image and gemini-video into Claude Code (~\.claude\skills) and Codex (~\.agents\skills).
+# Windows installer: links gemini-image into Claude Code (~\.claude\skills) and Codex (~\.agents\skills).
 # Uses directory junctions (no admin rights needed). Existing same-named skills are moved to a backup folder, never deleted.
 $ErrorActionPreference = "Stop"
 
 $Repo = $PSScriptRoot
-$Skills = @("gemini-image", "gemini-video")
+$Skills = @("gemini-image")
 $Targets = @("$HOME\.claude\skills", "$HOME\.agents\skills")
 $Backup = "$HOME\.local\share\gemini-media-skill-backups\$(Get-Date -Format yyyyMMdd-HHmmss)"
 
@@ -37,9 +37,6 @@ if ($node) { Ok "node $(node --version)" } else { Warn "node not found (18+ requ
 $agy = Get-Command agy -ErrorAction SilentlyContinue
 if (-not $agy -and (Test-Path "$env:LOCALAPPDATA\agy\bin\agy.exe")) { $agy = "$env:LOCALAPPDATA\agy\bin\agy.exe" }
 if ($agy) { Ok "agy found. Sign in once by running: agy" } else { Warn "Antigravity CLI (agy) not found: irm https://antigravity.google/cli/install.ps1 | iex" }
-
-$aside = Get-Command aside -ErrorAction SilentlyContinue
-if ($aside) { Ok "aside CLI found (gemini-video)" } else { Warn "aside CLI not found (gemini-video only): https://aside.com/download" }
 
 Write-Host "`nDone. Restart your agent session, then try:"
 Write-Host "  /gemini-image a cozy reading room at sunset, 16:9"

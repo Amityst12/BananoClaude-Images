@@ -2,6 +2,8 @@
 
 [한국어](README.ko.md)
 
+> **Local Windows fork: image only.** `gemini-video` (which needs the Aside browser) was removed and `install.ps1` replaces `install.sh` on Windows. The video sections below are kept from upstream and do not apply here.
+
 Generate **Gemini images (Nano Banana)** and **Veo videos** from Claude Code or Codex using the **Google AI subscription you already pay for**. No Gemini API key, no per-call billing, no exported tokens.
 
 | Image (text) | Image (reference) | Video (reference, Gemini web) |
