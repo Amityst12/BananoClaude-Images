@@ -41,7 +41,7 @@ Output lines: `PATH=`, `SIZE=`, `SOURCE=`, `SECONDS=`, `MARKDOWN=`, then `QUOTA_
 node <skill-dir>/scripts/gemini_image.mjs usage
 ```
 
-Shows remaining 5-hour / weekly limits. On a limit error, report it; do not retry in a loop and do not switch to a paid API. Keep Antigravity's "AI Credit Overages" setting on **Never** so exceeding the baseline quota cannot spend purchased credits.
+Shows remaining 5-hour / weekly limits. The image model has its own cap that `usage` does not show (Gemini totals can read 97% while images return 429 `RESOURCE_EXHAUSTED`); the script reports "image model cap reached" with the reset time, which you pass on to the user. On a limit error, report it; do not retry in a loop and do not switch to a paid API. Keep Antigravity's "AI Credit Overages" setting on **Never** so exceeding the baseline quota cannot spend purchased credits.
 
 ## Troubleshooting
 

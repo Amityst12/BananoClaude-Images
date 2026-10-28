@@ -241,6 +241,28 @@ async function generate(o) {
     const dirs = [...convIds].map((id) => path.join(BRAIN, id));
     src = newestImagesSince(dirs, started)[0] || null;
   }
+  if (!src) {
+    // The image model has its own cap, separate from the totals shown by /usage. agy still
+    // exits 0, so look for the 429 text in this run's brain logs and report it clearly.
+    for (const id of convIds) {
+      const dir = path.join(BRAIN, id);
+      const stack = [dir];
+      while (stack.length) {
+        const d = stack.pop();
+        let entries = [];
+        try { entries = readdirSync(d, { withFileTypes: true }); } catch { continue; }
+        for (const e of entries) {
+          const p = path.join(d, e.name);
+          if (e.isDirectory()) { stack.push(p); continue; }
+          try {
+            if (statSync(p).size > 5e6) continue;
+            const t = readFileSync(p, "utf8").match(/exhausted your capacity on this model[^"\\]*/i);
+            if (t) die(`image model cap reached (separate from /usage totals): ${t[0].trim()}`, 4);
+          } catch {}
+        }
+      }
+    }
+  }
   if (!src) die(`agy reported success but no new image file was found. Response: ${(result.response || "").slice(0, 300)}`);
 
   mkdirSync(path.dirname(out), { recursive: true });
