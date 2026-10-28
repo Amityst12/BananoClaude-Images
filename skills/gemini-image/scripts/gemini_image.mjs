@@ -34,6 +34,7 @@ function parseArgs(argv) {
     else if (a === "--timeout") o.timeout = next();
     else if (a === "--overwrite") o.overwrite = true;
     else if (a === "--dry-run") o.dryRun = true;
+    else if (a === "--no-quota") o.noQuota = true;
     else die(`unknown argument: ${a}`);
   }
   return o;
@@ -116,6 +117,27 @@ function dims(file) {
   const w = r.stdout?.match(/pixelWidth:\s*(\d+)/)?.[1];
   const h = r.stdout?.match(/pixelHeight:\s*(\d+)/)?.[1];
   return w && h ? `${w}x${h}` : "unknown";
+}
+
+// Best-effort remaining-quota summary for the Gemini models (image generation uses these).
+// `agy -p /usage` rows: <group>\t<limit name>\t<remaining %>\t<reset ISO time>
+function quotaLines(agy) {
+  try {
+    const r = spawnSync(agy, ["-p", "/usage"], { encoding: "utf8", env: subscriptionEnv(), timeout: 60000 });
+    const lines = [];
+    for (const row of (r.stdout || "").split(/\r?\n/)) {
+      const [group, name, pct, reset] = row.split("\t");
+      if (group !== "Gemini Models" || !pct) continue;
+      const key = /five/i.test(name) ? "QUOTA_5H" : /weekly/i.test(name) ? "QUOTA_WEEK" : null;
+      if (!key) continue;
+      const t = new Date(reset);
+      const when = isNaN(t) ? reset : t.toLocaleString([], { weekday: "short", hour: "2-digit", minute: "2-digit" });
+      lines.push(`${key}=${pct.trim()} remaining (resets ${when})`);
+    }
+    return lines;
+  } catch {
+    return [];
+  }
 }
 
 function usage(agy) {
@@ -247,6 +269,7 @@ async function generate(o) {
   console.log(`SOURCE=${src}`);
   console.log(`SECONDS=${Math.round(result.duration_seconds || 0)}`);
   console.log(`MARKDOWN=![${path.basename(out)}](${out})`);
+  if (!o.noQuota) for (const l of quotaLines(agy)) console.log(l);
 }
 
 const o = parseArgs(process.argv.slice(2));

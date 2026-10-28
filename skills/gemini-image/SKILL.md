@@ -19,7 +19,9 @@ node <skill-dir>/scripts/gemini_image.mjs generate \
   --out generated-images/robot.png
 ```
 
-Output lines: `PATH=`, `SIZE=`, `SOURCE=`, `SECONDS=`, `MARKDOWN=`. Show the result with the `MARKDOWN` line and look at the image yourself before calling it done.
+Output lines: `PATH=`, `SIZE=`, `SOURCE=`, `SECONDS=`, `MARKDOWN=`, then `QUOTA_5H=` / `QUOTA_WEEK=` (remaining Gemini quota and reset time; add `--no-quota` to skip). Show the result with the `MARKDOWN` line and look at the image yourself before calling it done.
+
+**After every image, tell the user the remaining quota** in one short line, from the `QUOTA_*` lines (for example: "5-hour quota: 96% left, weekly: 97% left"). Warn when either drops below 20%.
 
 ## Rules
 
