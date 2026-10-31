@@ -100,6 +100,19 @@ Diagrams, charts, SVG and UI mockups are not "images" for this rule.
 
 מפעילים מחדש את Claude Code. בלי הכלל זה עדיין עובד, אבל אם מחוברים כמה כלי תמונות, Claude עלול לבחור בכלי אחר.
 
+## גיבוי בתשלום דרך API (אופציונלי)
+
+כשמודל התמונות מגיע לתקרה משלו, `agy` נכשל בשגיאת 429 ומציין מתי היא מתאפסת. אם לא רוצים לחכות, הסקיל יכול לעבור ל-API של Gemini עם המפתח שלך. זה **בתשלום לפי תמונה** (בערך $0.07 ב-1K, $0.10 ב-2K), וזה אף פעם לא קורה בשקט: Claude שואל קודם, והסקריפט מסרב לרוץ בלי `--yes`.
+
+```bash
+# שמים את המפתח בקובץ מחוץ לכל ריפו (שורה אחת): GEMINI_API_KEY=...
+#   ~/.bananoclaude.env
+node ~/.claude/skills/gemini-image/scripts/gemini_api_image.mjs generate --prompt "..." --out x.jpg --aspect 1:1        # מדפיס עלות, לא שולח כלום
+node ~/.claude/skills/gemini-image/scripts/gemini_api_image.mjs generate --prompt "..." --out x.jpg --aspect 1:1 --yes  # אחרי שאישרת
+```
+
+ההוצאות נרשמות ב-`~/.bananoclaude-api-spend.log`. המפתח נשלח רק ל-Google ולא מודפס.
+
 ## הערות ל-Windows
 
 המקור נכתב ל-Mac. בפורק הזה נוספו: `install.ps1` (junctions, בלי הרשאות מנהל), איתור `agy.exe` תחת `%LOCALAPPDATA%`, פענוח נתיבי Windows וקריאת גודל תמונה בלי `sips`. בלי `sips` הקובץ נשמר בפורמט ש-`agy` מחזיר (JPEG), גם אם ביקשת `.png`, ותופיע אזהרה.

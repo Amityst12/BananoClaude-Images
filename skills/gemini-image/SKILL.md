@@ -43,6 +43,19 @@ node <skill-dir>/scripts/gemini_image.mjs usage
 
 Shows remaining 5-hour / weekly limits. The image model has its own cap that `usage` does not show (Gemini totals can read 97% while images return 429 `RESOURCE_EXHAUSTED`); the script reports "image model cap reached" with the reset time, which you pass on to the user. On a limit error, report it; do not retry in a loop and do not switch to a paid API. Keep Antigravity's "AI Credit Overages" setting on **Never** so exceeding the baseline quota cannot spend purchased credits.
 
+## Paid API fallback (only when agy is capped)
+
+When `generate` exits with code 4 ("image model cap reached"), tell the user the reset time and **ask** whether to use their own Gemini API key instead. This is billed per image (about $0.07 for 1K, $0.10 for 2K), outside the subscription. Never switch silently.
+
+```bash
+# 1) dry run: prints the estimated cost and exits with code 2, nothing is sent
+node <skill-dir>/scripts/gemini_api_image.mjs generate --prompt "..." --out generated-images/x.jpg --aspect 1:1 [--ref a.jpg]
+# 2) only after the user approves the cost
+node <skill-dir>/scripts/gemini_api_image.mjs generate ... --yes
+```
+
+The key lives in `~/.bananoclaude.env` (one line, `GEMINI_API_KEY=...`) or in the file named by `BANANOCLAUDE_ENV`; never print it, never read it yourself, never paste it into chat. `--list-models` checks the key for free. Spend is logged to `~/.bananoclaude-api-spend.log`. `--aspect` takes real ratios here (1:1, 4:5, 9:16, 16:9), unlike agy. After the image, report the `SPENT_SO_FAR_USD` line.
+
 ## Troubleshooting
 
 - `agy is not signed in`: the user runs `agy` once in a terminal and signs in with Google.

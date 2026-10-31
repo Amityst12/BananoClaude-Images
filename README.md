@@ -102,6 +102,19 @@ Diagrams, charts, SVG and UI mockups are not "images" for this rule.
 
 Restart Claude Code afterwards. Without this rule it still works, but Claude may pick another image tool if you have several connected.
 
+## Paid API fallback (optional)
+
+When the image model hits its own cap, `agy` fails with a 429 and tells you when it resets. If you do not want to wait, the skill can fall back to the Gemini API with your own key. This is **billed per image** (roughly $0.07 at 1K, $0.10 at 2K) and never happens silently: Claude asks first, and the script refuses to run without `--yes`.
+
+```bash
+# put your key in a file outside any repo (one line): GEMINI_API_KEY=...
+#   ~/.bananoclaude.env
+node ~/.claude/skills/gemini-image/scripts/gemini_api_image.mjs generate --prompt "..." --out x.jpg --aspect 1:1        # prints the cost, sends nothing
+node ~/.claude/skills/gemini-image/scripts/gemini_api_image.mjs generate --prompt "..." --out x.jpg --aspect 1:1 --yes  # after you approve
+```
+
+Spend is logged to `~/.bananoclaude-api-spend.log`. The key is sent only to Google and never printed.
+
 ## Windows notes
 
 Upstream is Mac-first. This fork adds: `install.ps1` (directory junctions, no admin rights), `agy.exe` discovery under `%LOCALAPPDATA%`, Windows path parsing, and image size detection without `sips`. Without `sips`, the file is saved in the format `agy` returns (JPEG). If you ask for `.png`, you still get a `.jpg` and a warning.

@@ -2,7 +2,7 @@
 // gemini-image bridge: Claude Code -> official Antigravity CLI (agy) headless -> built-in generate_image.
 // Uses the signed-in Google AI subscription quota. Never reads OAuth files, never uses an API key.
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, statSync, readdirSync, copyFileSync, mkdirSync, readFileSync } from "node:fs";
+import { appendFileSync, existsSync, statSync, readdirSync, copyFileSync, mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import os from "node:os";
 
@@ -11,7 +11,13 @@ const BRAIN = path.join(HOME, ".gemini", "antigravity-cli", "brain");
 const IMG_RE = /\.(png|jpe?g|webp)$/i;
 const RISKY_TOOL = /^(run_command|send_command_input|write_to_file|replace_file_content|multi_replace_file_content|sed_file|notebook_execution|notebook_edit|send_message|delete_knowledge|run_workflow|call_mcp_tool|browser_.*|open_browser_url|execute_browser_javascript|click_browser_pixel)$/;
 
+// One line per attempt in ~/.bananoclaude-log.jsonl, so the image-model cap can be measured.
+function logRun(ok, note = "") {
+  try { appendFileSync(path.join(HOME, ".bananoclaude-log.jsonl"), JSON.stringify({ t: new Date().toISOString(), ok, note }) + "\n"); } catch {}
+}
+
 function die(msg, code = 1) {
+  logRun(false, msg.slice(0, 120));
   console.error(`ERROR: ${msg}`);
   process.exit(code);
 }
@@ -290,6 +296,7 @@ async function generate(o) {
   console.log(`SIZE=${dims(out)}`);
   console.log(`SOURCE=${src}`);
   console.log(`SECONDS=${Math.round(result.duration_seconds || 0)}`);
+  logRun(true);
   console.log(`MARKDOWN=![${path.basename(out)}](${out})`);
   if (!o.noQuota) for (const l of quotaLines(agy)) console.log(l);
 }
